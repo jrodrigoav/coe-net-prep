@@ -1,7 +1,7 @@
 ﻿using Backend.API.Models;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
@@ -15,29 +15,34 @@ namespace Backend.API.Services
         {
             _settings = optionsMonitor.CurrentValue;
         }
-
-        public string GenerateToken(string username)
+         public JwtSecurityToken GenerateToken(string username, Claim[]? additionalClaims = null)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey));
-            var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.UtcNow.AddHours(3);
-
-            var claims = new Claim[] {
-            new Claim(JwtRegisteredClaimNames.Sub, username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var tokenDescriptor = new SecurityTokenDescriptor
+            var claims = new[]
             {
-                Audience = _settings.Audience,
-                Issuer = _settings.Issuer,
-                Subject = new ClaimsIdentity(claims),
-                Expires = expires,
-                SigningCredentials = signingCredentials
-            };
+            new Claim(JwtRegisteredClaimNames.Sub,username),
+            // this guarantees the token is unique
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
 
-            var tokenHandler = new JsonWebTokenHandler();
-            return tokenHandler.CreateToken(tokenDescriptor);
+            if (additionalClaims is object)
+            {
+                var claimList = new List<Claim>(claims);
+                claimList.AddRange(additionalClaims);
+                claims = claimList.ToArray();
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SigningKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            return new JwtSecurityToken(
+                issuer: _settings.Issuer,
+                audience: _settings.Audience,
+                expires: DateTime.UtcNow.Add(_settings.Expire),
+                claims: claims,
+                signingCredentials: creds
+            );
         }
+
+
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.API.Controllers
 {
-    [Route("api/time"),ApiController, Authorize]
+    [Route("api/time"), ApiController, Authorize]
     public class TimeController : ControllerBase
     {
         [HttpGet]
