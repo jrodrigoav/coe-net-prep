@@ -1,0 +1,19 @@
+{
+  "name": "coe-net-prep-react",
+  "version": "1.0.0",
+  "description": "CoE .NET Preparation",
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "scripts": {
+    "start": "parcel src/index.html",
+    "build": "parcel build src/index.html"
+  },
+  "author": "Jesus Acedo",
+  "license": "MIT",
+  "devDependencies": {
+    "parcel": "2.8.3",
+    "process": "0.11.10"
+  }
+}
